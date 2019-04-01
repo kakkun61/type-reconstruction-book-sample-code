@@ -1,0 +1,31 @@
+name: type-reconstruction-book-sample-code
+version: 0.1.0.0
+github: "kakkun61/type-reconstruction-book-sample-code"
+license: BSD3
+author: "Kazuki Okamoto"
+maintainer: "kazuki.okamoto@kakkun61.com"
+copyright: "2019 Kazuki Okamoto"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  ghc-options:
+  - -Wall
+  - -Wcompat
+  - -Wincomplete-uni-patterns
+  - -Wincomplete-record-updates
+  - -Wmonomorphism-restriction
+  - -Wmissing-exported-signatures
+  - -Wmissing-home-modules
+  - -Widentities
+  - -Wredundant-constraints
+  - -Wpartial-fields
+  dependencies:
+  - containers
+
