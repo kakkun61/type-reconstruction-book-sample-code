@@ -1,30 +1,34 @@
 module TypeReconstruction where
 
-import Prelude hiding (Integer, Bool)
-import qualified Prelude as P
+import Prelude hiding (Integer)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
 import qualified Data.List as List
 
+-- #@@range_begin(term)
 data Term
   = ValueVariable VariableName
-  | IntegerValue P.Int
-  | BoolValue P.Bool
+  | IntegerValue Int
+  | BooleanValue Bool
   | Plus Term Term
   | If Term Term Term
   | Abstract VariableName Term
   | Application Term Term
   deriving (Show, Eq)
+-- #@@range_end(term)
 
+-- #@@range_begin(type)
 data Type
   = TypeVariable VariableName
   | Integer
-  | Bool
+  | Boolean
   | Arrow Type Type
   deriving (Show, Eq, Ord)
+-- #@@range_end(type)
 
+-- #@@range_begin(other_type)
 type Context = Map VariableName Type
 
 type Constraint = Set (Type, Type)
@@ -32,14 +36,16 @@ type Constraint = Set (Type, Type)
 type Assign = (VariableName, Type)
 
 type VariableName = String
+-- #@@range_end(other_type)
 
 -- | 型から自由型変数を抽出する
 freeVarialbes :: Type -> Set VariableName
 freeVarialbes (TypeVariable x) = Set.singleton x
 freeVarialbes Integer = Set.empty
-freeVarialbes Bool = Set.empty
+freeVarialbes Boolean = Set.empty
 freeVarialbes (Arrow t1 t2) = Set.union (freeVarialbes t1) (freeVarialbes t2)
 
+-- #@@range_begin(unify)
 -- | 単一化関数
 unify :: Constraint -> Either String [Assign]
 unify c
@@ -62,6 +68,7 @@ unify c
           (Arrow s1 s2, Arrow t1 t2) ->
             unify (Set.insert (s1, t1) (Set.insert (s2, t2) c'))
           _ -> Left "invalid constraints"
+-- #@@range_end(unify)
 
 -- | 型への代入
 assignType :: [Assign] -> Type -> Type
@@ -73,7 +80,7 @@ assignType' (y, s) t'@(TypeVariable x)
   | x == y = s
   | otherwise = t'
 assignType' _ Integer = Integer
-assignType' _ Bool = Bool
+assignType' _ Boolean = Boolean
 assignType' a (Arrow t1 t2) = Arrow (assignType' a t1) (assignType' a t2)
 
 -- | 制約への代入
@@ -83,12 +90,13 @@ assignConstraint as cst =
   where
     go cst' a = Set.map (\(t1, t2) -> (assignType' a t1, assignType' a t2)) cst'
 
+-- #@@range_begin(constraint_type)
 -- | 制約型付け
 constraintType :: Context -> Term -> [VariableName] -> Either String (Type, Constraint, [VariableName])
 -- CT-Int
 constraintType _ (IntegerValue _) names = pure (Integer, Set.empty, names)
 -- CT-True, CT-False
-constraintType _ (BoolValue _) names = pure (Bool, Set.empty, names)
+constraintType _ (BooleanValue _) names = pure (Boolean, Set.empty, names)
 -- CT-Var
 constraintType ctx (ValueVariable x) names = do
   typ <-
@@ -107,7 +115,7 @@ constraintType ctx (If t1 t2 t3) names = do
   (typ1, cst1, names1) <- constraintType ctx t1 names
   (typ2, cst2, names2) <- constraintType ctx t2 names1
   (typ3, cst3, names3) <- constraintType ctx t3 names2
-  let cst = Set.unions [cst1, cst2, cst3, Set.fromList [(typ1, Bool), (typ2, typ3)]]
+  let cst = Set.unions [cst1, cst2, cst3, Set.fromList [(typ1, Boolean), (typ2, typ3)]]
   pure (typ2, cst, names3)
 -- CT-Abs
 constraintType ctx (Abstract x t1) names = do
@@ -122,6 +130,7 @@ constraintType ctx (Application t1 t2) names = do
   (typ, names3) <- newTypeVariable names2
   let cst = Set.unions [cst1, cst2, Set.singleton (typ1, Arrow typ2 typ)]
   pure (typ, cst, names3)
+-- #@@range_end(constraint_type)
 
 newTypeVariable :: [VariableName] -> Either String (Type, [VariableName])
 newTypeVariable (n:names) = pure (TypeVariable n, names)
