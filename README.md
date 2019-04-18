@@ -22,7 +22,7 @@ $ stack repl
 
 ### 実行例
 
-```
+```haskell
 > context = mempty
 > term = Abstract "f" (Abstract "x" (If (Application (ValueVariable "f") (ValueVariable "x")) (Application (ValueVariable "f") (IntegerValue 1)) (Application (ValueVariable "f") (IntegerValue 2))))> names = show <$> [1 :: Int ..]
 > Right (typ, constraint, names') = constraintType context term names
