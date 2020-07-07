@@ -2,7 +2,7 @@
 
 書籍『俺々言語にだって型推論が欲しい！』のサンプルコードです。
 
-書籍ページ：https://kakkun61.booth.pm/items/1317485
+書籍ページ：https://doujin.kakkun61.com/type-reconstruction
 
 ## 実行方法
 
